@@ -1,19 +1,20 @@
 # A simple Makefile for compiling small SDL projects
 
 # set the compiler
-CC := g++
+CC := gcc
 
 # set the compiler flags
 CFLAGS := `sdl2-config --libs --cflags` -ggdb3 -O0 --std=c99 -Wall -lSDL2_image -lm -lpng
 
-# add header files here
-HDRS :=
+SRCDIR := src
+OBJDIR := obj
 
 # add source files here
-SRCS := pong.c
+SRCS := $(wildcard $(SRCDIR)/*.c)
+HDRS := $(wildcard $(SRCDIR)/*.h)
 
 # generate names of object files
-OBJS := $(SRCS:.c=.o)
+OBJS := $(SRCS:$(SRCDIR)/%.c=$(OBJDIR)/%.o)
 
 # name of executable
 EXEC := game
@@ -26,8 +27,8 @@ $(EXEC): $(OBJS) $(HDRS) Makefile
 	$(CC) -o $@ $(OBJS) $(CFLAGS)
 
 # recipe for building object files
-#$(OBJS): $(@:.o=.c) $(HDRS) Makefile
-#	$(CC) -o $@ $(@:.o=.c) -c $(CFLAGS)
+$(OBJS): $(SRCS) $(HDRS) Makefile
+	$(CC) -o $@ $(@:$(OBJDIR)/%.o=$(SRCDIR)/%.c) -c $(CFLAGS)
 
 # recipe to clean the workspace
 clean:
