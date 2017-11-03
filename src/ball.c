@@ -2,6 +2,7 @@
 #include <math.h>
 #include "pong.h"
 #include "paddle.h"
+#include "audio.h"
 
 #define BALL_SIZE (10)
 
@@ -73,15 +74,16 @@ CollisionType checkCollision() {
         return TOP_EDGE_COLLISION;
     }
 
-    
-
     return NO_COLLISION;
 }
+
 
 void moveBall() {
 
     CollisionType collisionType = checkCollision();
 
+    playCollisionSound(collisionType);
+    
     if (collisionType == LEFT_EDGE_COLLISION) {
         printf("Left Player point!\n");
     } else if (collisionType == RIGHT_EDGE_COLLISION) {

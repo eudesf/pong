@@ -1,69 +1,68 @@
 #include "audio.h"
+#include "common.h"
 
-static Uint8 *audio_pos; // global pointer to the audio buffer to be played
-static Uint32 audio_len; // remaining length of the sample we have to play
+typedef struct {
+    SDL_AudioSpec wavSpec;
+    Uint32 wavLength;
+    Uint8 *wavBuffer;
+    SDL_AudioDeviceID deviceId;
+} Wav;
 
-// audio callback function
-// here you have to copy the data of your audio buffer into the
-// requesting audio buffer (stream)
-// you should only copy as much as the requested length (len)
-void my_audio_callback(void *userdata, Uint8 *stream, int len) {
+Wav paddleBallTouchWAV;
+Wav backgroundWAV;
 
+int loadWAVFile(const char* path, Wav* wav) {
+    if (SDL_LoadWAV(path,
+                    &wav->wavSpec,
+                    &wav->wavBuffer,
+                    &wav->wavLength) == NULL) {
+        printf("could not open wav file %s: %s\n", path, SDL_GetError());
+        return 1;
+    }
+    return 0;
+}
 
-	if (audio_len ==0)
-		return;
-	
-	len = ( len > audio_len ? audio_len : len );
-	//SDL_memcpy (stream, audio_pos, len); 					// simply copy from one buffer into the other
-	SDL_MixAudio(stream, audio_pos, len, SDL_MIX_MAXVOLUME);// mix from one buffer into another
-	
+void loadWAVFiles() {
+    loadWAVFile("resources/paddle-ball-touch.wav", &paddleBallTouchWAV);
+    loadWAVFile("resources/background.wav", &backgroundWAV);
+}
 
-	audio_pos += len;
-	audio_len -= len;
+void freeWAVFiles() {
+    SDL_FreeWAV(paddleBallTouchWAV.wavBuffer);
+    SDL_FreeWAV(backgroundWAV.wavBuffer);
+}
 
+void playWAV(Wav* wav) {
+    SDL_QueueAudio(wav->deviceId, wav->wavBuffer, wav->wavLength);
+    SDL_PauseAudioDevice(wav->deviceId, 0);
 }
 
 int a_startup() {
-// Initialize SDL.
-	if (SDL_Init(SDL_INIT_AUDIO) < 0)
-			return 1;
+    SDL_Init(SDL_INIT_AUDIO);
 
-	// local variables
-	static Uint32 wav_length; // length of our sample
-	static Uint8 *wav_buffer; // buffer containing our audio file
-	static SDL_AudioSpec wav_spec; // the specs of our piece of music
-	
-	
-	/* Load the WAV */
-	// the specs, length and buffer of our wav are filled
-	if( SDL_LoadWAV("resources/paddle-ball-touch.wav", &wav_spec, &wav_buffer, &wav_length) == NULL ){
-	  fprintf(stderr, "Couldn't open audio: %s\n", SDL_GetError());            
-	  return 1;
-	}
-	// set the callback function
-	wav_spec.callback = my_audio_callback;
-	wav_spec.userdata = NULL;
-	// set our global static variables
-	audio_pos = wav_buffer; // copy sound buffer
-	audio_len = wav_length; // copy file length
-	
-	/* Open the audio device */
-	if ( SDL_OpenAudio(&wav_spec, NULL) < 0 ){
-	  fprintf(stderr, "Couldn't open audio: %s\n", SDL_GetError());
-	  exit(-1);
-	}
-	
-	/* Start playing */
-	SDL_PauseAudio(0);
+    loadWAVFiles();
 
-	// wait until we're don't playing
-	while ( audio_len > 0 ) {
-		SDL_Delay(100); 
-	}
-	
-	// shut everything down
-	SDL_CloseAudio();
-	SDL_FreeWAV(wav_buffer);
-        return 0;
+    backgroundWAV.deviceId = SDL_OpenAudioDevice(NULL, 0, &backgroundWAV.wavSpec, NULL, 0);
+    paddleBallTouchWAV.deviceId = SDL_OpenAudioDevice(NULL, 0, &paddleBallTouchWAV.wavSpec, NULL, 0);
+    
+    playWAV(&backgroundWAV);
+
+    return 0;
 }
 
+void a_finalize() {
+    SDL_CloseAudioDevice(paddleBallTouchWAV.deviceId);
+    SDL_CloseAudioDevice(backgroundWAV.deviceId);
+    freeWAVFiles();
+}
+
+void playCollisionSound(CollisionType collisionType) {
+    switch (collisionType) {
+    case LEFT_PADDLE_COLLISION:
+    case RIGHT_PADDLE_COLLISION:
+        playWAV(&paddleBallTouchWAV);
+        break;
+    default:
+        printf("collision audio not handled\n");
+    }
+}
