@@ -9,15 +9,24 @@ Paddle rightPaddle;
 void preparePaddles() {
     leftPaddle.direction = 1;
     leftPaddle.position = 0;
+    leftPaddle.byMouse = 0;
+    
     rightPaddle.direction = -1;
     rightPaddle.position = 0;
+    rightPaddle.byMouse = 1;
 }
 
 void drawPaddle(Paddle* paddle) {
     SDL_Rect viewPort;
     SDL_RenderGetViewport(graphics.renderer, &viewPort);
 
-    paddle->rect.y = paddle->position + (viewPort.h - PADDLE_HEIGHT) / 2;
+    if (paddle->byMouse) {
+        int mouseY;
+        SDL_GetMouseState(NULL, &mouseY);
+        paddle->rect.y = mouseY - viewPort.y - (PADDLE_HEIGHT / 2);
+    } else {
+        paddle->rect.y = paddle->position + (viewPort.h - PADDLE_HEIGHT) / 2;
+    }
     paddle->rect.h = PADDLE_HEIGHT;
     paddle->rect.w = PADDLE_WIDTH;
     paddle->rect.x = PADDLE_SPACEMENT * paddle->direction;

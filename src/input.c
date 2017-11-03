@@ -1,14 +1,20 @@
 #include "input.h"
 #include "paddle.h"
+#include "ball.h"
+
+#define MILLIS_PER_FRAME (16)
 
 void i_handleEvents() {
 
     preparePaddles();
+    prepareBall();
     SDL_Event event;
+    PaddleAction paddleAction;
 
     while (1) {
+        long millis = SDL_GetTicks();
         while (SDL_PollEvent(&event)) {
-            PaddleAction paddleAction = NO_PADDLE_ACTION;
+            paddleAction = NO_PADDLE_ACTION;
             switch (event.type) {
             case SDL_QUIT:
                 return;
@@ -21,8 +27,12 @@ void i_handleEvents() {
                 }
             }
             handlePaddleAction(paddleAction);
-            p_render();
-            SDL_Delay(10);
         }
+        p_render();
+        millis = SDL_GetTicks() - millis;
+        if (millis < MILLIS_PER_FRAME) {
+            SDL_Delay(MILLIS_PER_FRAME - millis);
+        }
+
     }
 }

@@ -6,6 +6,7 @@ typedef struct {
     SDL_Rect rect;
     int direction;
     int position;
+    int byMouse;
 } Paddle;
 
 extern Paddle leftPaddle;
