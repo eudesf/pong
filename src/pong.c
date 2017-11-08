@@ -2,6 +2,7 @@
 #include "pong.h"
 #include "paddle.h"
 #include "ball.h"
+#include "particles.h"
 
 #define WINDOW_BORDER (10)
 
@@ -31,8 +32,9 @@ void p_render() {
         }
     }
 
-    drawPaddles();
     drawBall();
+    drawParticles();
+    drawPaddles();
     moveBall();
     
     SDL_RenderPresent(graphics.renderer);

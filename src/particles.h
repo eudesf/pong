@@ -1,0 +1,2 @@
+void prepareParticles();
+void drawParticles();

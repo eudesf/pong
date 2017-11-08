@@ -4,22 +4,13 @@
 #include "paddle.h"
 #include "audio.h"
 
-#define BALL_SIZE (10)
-
-typedef struct {
-    int x;
-    int y;
-    int velX;
-    int velY;
-} Ball;
-
 Ball ball;
 
 void prepareBall() {
     ball.x = ceil(mainViewport.w - BALL_SIZE) / 2;
     ball.y = ceil(mainViewport.h - BALL_SIZE) / 2;
     if (ball.velX == 0 && ball.velY == 0) {
-        ball.velX = ball.velY = 6;        
+        ball.velX = ball.velY = 6;
     }
 }
 

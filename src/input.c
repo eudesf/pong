@@ -1,6 +1,7 @@
 #include "input.h"
 #include "paddle.h"
 #include "ball.h"
+#include "particles.h"
 
 #define MILLIS_PER_FRAME (16)
 
@@ -8,6 +9,7 @@ void i_handleEvents() {
 
     preparePaddles();
     prepareBall();
+    prepareParticles();
     SDL_Event event;
     PaddleAction paddleAction;
 
